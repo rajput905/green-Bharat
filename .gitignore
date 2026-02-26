@@ -43,3 +43,14 @@ __chroma_db__/
 # ── OS ────────────────────────────────
 .DS_Store
 Thumbs.db
+
+# GreenFlow AI extras
+__pycache__/
+*.py[cod]
+.env
+data/greenflow_dev.db
+data/watch/output/
+.coverage
+htmlcov/
+.pytest_cache/
+*.log
