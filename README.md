@@ -1,3 +1,5 @@
+![Python](https://img.shields.io/badge/Python-3.11+-blue?logo=python) ![FastAPI](https://img.shields.io/badge/FastAPI-0.110-green?logo=fastapi) ![License](https://img.shields.io/badge/License-MIT-yellow) ![Status](https://img.shields.io/badge/Status-Active-brightgreen)
+
 # GreenFlow AI 🌿
 
 Real-time environmental intelligence system powered by Pathway, FastAPI, and OpenAI RAG.
@@ -237,3 +239,4 @@ DATABASE_URL=postgresql+asyncpg://user:pass@host:5432/greenflow
 ## 📝 License
 
 MIT © 2025 GreenFlow AI Team
+
