@@ -1,127 +1,86 @@
 """
-GreenFlow AI – Application Entry Point
-========================================
-Bootstraps the FastAPI server, configures logging via Loguru,
-sets up middleware, mounts routers, and wires up lifespan events.
-
-Run:
-    uvicorn greenflow.main:app --reload          # development
-    uvicorn greenflow.main:app --workers 4        # production
+GreenFlow AI – Main Application Entry Point
+==========================================
+FastAPI application that integrates:
+  - Real-time environmental telemetry (SSE)
+  - AI-powered CO2 predictions & risk assessment
+  - RAG-based chatbot for environmental advisory
+  - "What-if" scenario simulation
 """
 
 import sys
+import os
+import time
+from contextlib import asynccontextmanager
 from pathlib import Path
 
-# Add current directory to path to allow running from parent dir
-curr_dir = Path(__file__).parent.absolute()
-if str(curr_dir) not in sys.path:
-    sys.path.insert(0, str(curr_dir))
-
-from contextlib import asynccontextmanager
-
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from loguru import logger
 
+# Ensure the backend directory is in the path for internal imports
+sys.path.append(str(Path(__file__).parent))
+
 from config import settings
-
-# ── Import routers ────────────────────────────────────────────────────────────
-from api.routes import health, events, query, stream, analytics, chatbot, simulate, metrics, ai
-from api import risk, prediction, recommendation
-from api.middleware.request_logging import RequestLoggingMiddleware
-from database.session import init_db
-
+from api.routes import (
+    health,
+    events,
+    query,
+    stream,
+    analytics,
+    chatbot,
+    simulate,
+    metrics,
+    ai
+)
 
 # ─────────────────────────────────────────────────────────────────────────────
-# Logging setup (Loguru)
+# 1. Logging Configuration
 # ─────────────────────────────────────────────────────────────────────────────
-def _configure_logging() -> None:
-    """Remove default Loguru sink, add console + rotating file sink."""
+
+def _configure_logging():
+    """Sets up Loguru with clean formatting and file rotation."""
     logger.remove()
-
-    # Console – human-friendly in dev, JSON-like in prod
-    fmt_console = (
-        "<green>{time:YYYY-MM-DD HH:mm:ss}</green> | "
-        "<level>{level: <8}</level> | "
-        "<cyan>{name}</cyan>:<cyan>{line}</cyan> – {message}"
-    )
-    logger.add(sys.stderr, format=fmt_console, level=settings.log_level, colorize=True)
-
-    # Rotating file
     logger.add(
-        settings.log_file,
-        level=settings.log_level,
-        rotation=settings.log_rotation,
-        retention=settings.log_retention,
-        encoding="utf-8",
-        enqueue=True,          # thread-safe async write
-        backtrace=True,
-        diagnose=not settings.is_production,  # hide internals in production
+        sys.stderr,
+        format="<green>{time:YYYY-MM-DD HH:mm:ss}</green> | <level>{level: <8}</level> | <cyan>{name}</cyan>:<cyan>{function}</cyan>:<cyan>{line}</cyan> - <level>{message}</level>",
+        level=settings.log_level
     )
-
-    logger.info(
-        "Logging initialised | env={} | level={}",
-        settings.app_env,
-        settings.log_level,
-    )
-
+    # Also log to file for production auditing
+    log_dir = Path(__file__).parent / "logs"
+    log_dir.mkdir(exist_ok=True)
+    logger.add(log_dir / "server.log", rotation="10 MB", level="INFO")
 
 # ─────────────────────────────────────────────────────────────────────────────
-# Lifespan – startup / shutdown
+# 2. Lifecycle Management
 # ─────────────────────────────────────────────────────────────────────────────
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    """
-    FastAPI lifespan context manager.
-    Code before `yield` runs on startup; code after `yield` runs on shutdown.
-    """
-    # ── Startup ──────────────────────────────────────────────────────────────
-    logger.info("🌿 Starting up {}…", settings.app_name)
-
-    # 1. Configure logging
-    _configure_logging()
-
-    # 2. Initialise database (create tables if needed)
-    await init_db()
-    logger.info("✅ Database ready")
-
-    # 3. (Optional) Start the streaming pipeline
-    # from pipeline.streaming import run_pipeline
-    # run_pipeline()
-    logger.info("✅ Manual Pathway pipeline inactive (standby for production)")
-
-    logger.info("🚀 {} is live on {}:{}", settings.app_name, settings.app_host, settings.app_port)
-
-    yield   # ← application is running
-
-    # ── Shutdown ─────────────────────────────────────────────────────────────
-    logger.info("🛑 Graceful shutdown initiated…")
-    # Close any global async clients here (e.g. Redis, HTTP sessions)
-    logger.info("👋 {} stopped.", settings.app_name)
-
+    """Handles startup and shutdown events."""
+    logger.info("🚀 GreenFlow AI starting up on port {}...", settings.app_port)
+    # Ensure data directory exists
+    Path(settings.data_dir).mkdir(parents=True, exist_ok=True)
+    
+    yield
+    
+    logger.info("🛑 GreenFlow AI shutting down...")
 
 # ─────────────────────────────────────────────────────────────────────────────
-# FastAPI application factory
+# 3. Application Factory
 # ─────────────────────────────────────────────────────────────────────────────
+
 def create_app() -> FastAPI:
-    """Create and configure the FastAPI application instance."""
+    """Initializes and configures the FastAPI application."""
     app = FastAPI(
-        title=settings.app_name,
-        description=(
-            "Real-time AI streaming system powered by Pathway. "
-            "Provides REST, WebSocket, and SSE endpoints for green-data intelligence."
-        ),
+        title="GreenFlow AI",
+        description="Environmental Intelligence Command Center",
         version="1.0.0",
-        docs_url="/docs" if not settings.is_production else None,
-        redoc_url="/redoc" if not settings.is_production else None,
-        lifespan=lifespan,
+        lifespan=lifespan
     )
 
-    # ── Request Logging Middleware (must be added before CORS) ──────────────
-    app.add_middleware(RequestLoggingMiddleware)
-
-    # ── CORS ─────────────────────────────────────────────────────────────────
+    # CORS Configuration
     app.add_middleware(
         CORSMiddleware,
         allow_origins=settings.cors_origins,
@@ -130,42 +89,47 @@ def create_app() -> FastAPI:
         allow_headers=["*"],
     )
 
-    # ── API Routers ───────────────────────────────────────────────────────────
-    app.include_router(health.router,  prefix="/api/v1/health", tags=["Health"])
-    app.include_router(events.router,  prefix="/api/v1/events", tags=["Events"])
-    app.include_router(query.router,   prefix="/api/v1/query", tags=["Query / RAG"])
-    app.include_router(stream.router,  prefix="/api/v1/stream", tags=["Streaming"])
-    app.include_router(analytics.router, prefix="/api/v1/analytics", tags=["Analytics"])
-    app.include_router(chatbot.router,   prefix="/api/v1/chatbot",   tags=["AI Chat"])
-    app.include_router(simulate.router,  prefix="/api/v1/simulate",  tags=["Simulation"])
-    app.include_router(metrics.router,   prefix="/api/v1/metrics",   tags=["Metrics"])
-    app.include_router(ai.router,        prefix="/api/v1/ai",        tags=["AI Recommendation"])
+    # Request Logging Middleware
+    @app.middleware("http")
+    async def log_requests(request: Request, call_next):
+        start_time = time.time()
+        response = await call_next(request)
+        duration = time.time() - start_time
+        logger.info(
+            "{} {} | Status: {} | Latency: {:.2f}ms",
+            request.method, request.url.path, response.status_code, duration * 1000
+        )
+        return response
+
+    # Include API Routers
+    api_prefix = "/api/v1"
+    app.include_router(health.router, prefix=f"{api_prefix}/health", tags=["System"])
+    app.include_router(analytics.router, prefix=f"{api_prefix}/analytics", tags=["Intelligence"])
+    app.include_router(stream.router, prefix=f"{api_prefix}/stream", tags=["Real-time"])
+    app.include_router(chatbot.router, prefix=f"{api_prefix}/chatbot", tags=["AI"])
+    app.include_router(simulate.router, prefix=f"{api_prefix}/simulate", tags=["Simulator"])
+    app.include_router(metrics.router, prefix=f"{api_prefix}/metrics", tags=["System"])
 
     # ── Static Frontend ──────────────────────────────────────────────────────
-    # Mount Frontend - using absolute path to be robust across different execution directories
-    frontend_path = curr_dir / "frontend"
-    if frontend_path.exists():
-        app.mount("/", StaticFiles(directory=str(frontend_path), html=True), name="frontend")
+    # Mapping to the restructured frontend directory
+    frontend_dir = Path(__file__).parent.parent / "frontend"
+    if frontend_dir.exists():
+        app.mount("/", StaticFiles(directory=str(frontend_dir), html=True), name="frontend")
+        logger.info("🎨 Frontend mounted from {}", frontend_dir)
     else:
-        logger.error(f"Frontend directory not found at {frontend_path}")
+        logger.warning("⚠️ Frontend directory not found at {}", frontend_dir)
 
     return app
 
-
-# ── Create module-level app instance (used by uvicorn) ───────────────────────
+_configure_logging()
 app = create_app()
 
-
-# ─────────────────────────────────────────────────────────────────────────────
-# Dev convenience runner
-# ─────────────────────────────────────────────────────────────────────────────
 if __name__ == "__main__":
     import uvicorn
-
     uvicorn.run(
         "main:app",
-        host=settings.app_host,
-        port=settings.app_port,
-        reload=settings.app_debug,
-        log_level=settings.log_level.lower(),
+        host="0.0.0.0",
+        port=8000,
+        reload=True,
+        log_level="info"
     )

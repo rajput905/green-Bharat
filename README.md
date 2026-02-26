@@ -1,6 +1,6 @@
 # GreenFlow AI 🌿
 
-> **Real-time environmental intelligence system** powered by **Pathway**, **FastAPI**, and **OpenAI RAG**.
+Real-time environmental intelligence system powered by Pathway, FastAPI, and OpenAI RAG.
 
 ---
 
@@ -8,7 +8,7 @@
 
 | Layer | Technology |
 |---|---|
-| Real-time streaming | [Pathway](https://pathway.com) – incremental computation |
+| Real-time streaming | Pathway – incremental computation |
 | REST API | FastAPI + Uvicorn |
 | AI / RAG | OpenAI GPT-4o + ChromaDB vector store |
 | Data ingestion | JSONL files, Kafka, webhook push |
@@ -46,7 +46,9 @@ greenflow/
 │   ├── __init__.py
 │   └── session.py
 ├── frontend/           # Static HTML/JS dashboard
-│   └── index.html
+│   ├── index.html
+│   ├── style.css
+│   └── script.js
 ├── config.py           # Pydantic-Settings configuration
 ├── main.py             # Application entry point
 ├── requirements.txt
@@ -59,13 +61,11 @@ greenflow/
 ## 🚀 Quick Start
 
 ### 1 · Clone / enter project directory
-
 ```bash
 cd "e:\green bharat hackthon\greenflow"
 ```
 
 ### 2 · Create virtual environment
-
 ```bash
 python -m venv .venv
 # Windows
@@ -75,41 +75,35 @@ source .venv/bin/activate
 ```
 
 ### 3 · Install dependencies
-
 ```bash
 pip install -r requirements.txt
 ```
 
 ### 4 · Configure environment
-
 ```bash
 copy .env.example .env      # Windows
 # cp .env.example .env      # macOS / Linux
 ```
 
 Open `.env` and fill in at minimum:
-
-```
+```env
 OPENAI_API_KEY=sk-your-key-here
 SECRET_KEY=some-long-random-string
 ```
-
-For development the rest of the defaults work out of the box (SQLite, local Chroma).
+For development, the rest of the defaults work out of the box (SQLite, local Chroma).
 
 ### 5 · Create required directories
-
 ```bash
 mkdir -p data\watch\output logs
 ```
 
 ### 6 · Run the server
-
 ```bash
 # Development (auto-reload)
-uvicorn main:app --reload --host 0.0.0.0 --port 8000
+uvicorn greenflow.main:app --reload --host 0.0.0.0 --port 8000
 
 # Or via Python
-python main.py
+python greenflow/main.py
 ```
 
 Open your browser at **http://localhost:8000**
@@ -129,13 +123,13 @@ Open your browser at **http://localhost:8000**
 | GET | `/api/v1/stream/events` | SSE live feed |
 | WS | `/api/v1/stream/ws` | WebSocket connection |
 
-Interactive docs at **http://localhost:8000/docs** (development mode only).
+> Interactive docs at **http://localhost:8000/docs** (development mode only).
 
 ---
 
 ## 🔁 Pathway Streaming Pipeline
 
-The pipeline is in `pipeline/streaming.py`.  Enable it in `main.py` by uncommenting:
+The pipeline is in `pipeline/streaming.py`. Enable it in `main.py` by uncommenting:
 
 ```python
 from pipeline.streaming import run_pipeline
@@ -143,13 +137,13 @@ t = run_pipeline()
 ```
 
 Drop JSONL files into `data/watch/` and Pathway will:
+
 1. Detect them automatically (no restart needed)
 2. Apply UDFs: decode payload, classify source, compute carbon score
 3. Write enriched rows to `data/watch/output/enriched.jsonl`
 4. The SSE endpoint tails that file and pushes to the browser in real time
 
-Example event file `data/watch/sample.jsonl`:
-
+**Example event file** `data/watch/sample.jsonl`:
 ```json
 {"source": "sensor_42", "timestamp": 1700000000.0, "payload": "{\"text\": \"CO2 levels rising near urban zone\", \"co2_ppm\": 425.3}"}
 ```
@@ -178,7 +172,7 @@ The fastest way to get the full stack (Database, Engine, API, Dashboard) running
 
 ### 1 · Configure Environment
 Ensure your `.env` file has the necessary keys:
-```bash
+```env
 OPENAI_API_KEY=sk-your-key-here
 WEATHER_API_KEY=your-key       # Optional
 AQI_API_KEY=your-key           # Optional
@@ -190,10 +184,10 @@ docker-compose up --build -d
 ```
 
 This will launch:
-- **Greenflow DB**: PostgreSQL at port `5432`
+- **Greenflow DB**: PostgreSQL at port 5432
 - **Greenflow Engine**: Pathway processing pipeline
-- **Greenflow API**: FastAPI backend at port `8000`
-- **Greenflow UI**: Streamlit dashboard at port `8501`
+- **Greenflow API**: FastAPI backend at port 8000
+- **Greenflow UI**: Streamlit dashboard at port 8501
 
 ### 3 · Check logs
 ```bash
@@ -228,9 +222,11 @@ See `.env.example` for the full list with inline documentation.
 
 ```bash
 # 4 Uvicorn workers
-uvicorn main:app --workers 4 --host 0.0.0.0 --port 8000
+uvicorn greenflow.main:app --workers 4 --host 0.0.0.0 --port 8000
+```
 
-# Set in .env:
+Set in `.env`:
+```env
 APP_ENV=production
 APP_DEBUG=false
 DATABASE_URL=postgresql+asyncpg://user:pass@host:5432/greenflow
