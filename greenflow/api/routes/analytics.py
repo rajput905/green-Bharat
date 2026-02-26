@@ -1,11 +1,36 @@
+"""
+analytics.py — Environmental Intelligence API Routes
+=====================================================
+All endpoints serve processed environmental data from the analytics_records
+SQLAlchemy table.  Data is written by simulated_background_worker.py (dev)
+or the Pathway pipeline (production).
+
+Endpoints:
+    GET  /api/v1/analytics/live-data          → Latest N telemetry records
+    GET  /api/v1/analytics/risk-score         → Current risk level & score
+    GET  /api/v1/analytics/prediction         → Latest AQI prediction log
+    GET  /api/v1/analytics/prediction/co2     → 30-min CO₂ forecast (AI)
+    GET  /api/v1/analytics/recommendation     → AI-generated action plan
+"""
+
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, desc
 from typing import List
 
 from database.session import get_db
-from api.schemas.analytics import AnalyticsResponse, RiskScoreResponse, AlertResponse, PredictionResponse, CO2PredictionResponse, AIRecommendationResponse
+from api.schemas.analytics import (
+    AnalyticsResponse,
+    RiskScoreResponse,
+    AlertResponse,
+    PredictionResponse,
+    CO2PredictionResponse,
+    AIRecommendationResponse,
+)
 
+# ─────────────────────────────────────────────────────────────────────────────
+# Router — all routes mounted at /api/v1/analytics by main.py
+# ─────────────────────────────────────────────────────────────────────────────
 router = APIRouter()
 
 @router.get("/live-data", response_model=List[AnalyticsResponse])
