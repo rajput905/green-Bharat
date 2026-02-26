@@ -1,0 +1,1547 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>GreenFlow AI – Command Center</title>
+  <meta name="description"
+    content="GreenFlow AI: real-time environmental intelligence. CO₂ predictions, risk meter, AI recommendations." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap"
+    rel="stylesheet" />
+  <style>
+    /* ── Reset & Variables ──────────────────────────────────────────── */
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    :root {
+      --bg: #070d1a;
+      --bg2: #0d1526;
+      --card: #111d35;
+      --card2: #0f1929;
+      --border: #1e3050;
+      --border2: #253a5e;
+      --accent: #22c55e;
+      --accent2: #3b82f6;
+      --accent3: #8b5cf6;
+      --warn: #f59e0b;
+      --danger: #ef4444;
+      --text: #e2e8f0;
+      --muted: #64748b;
+      --muted2: #94a3b8;
+      --radius: 14px;
+      --shadow: 0 8px 32px rgba(0, 0, 0, .6);
+      --glow-g: 0 0 24px rgba(34, 197, 94, .2);
+      --glow-b: 0 0 24px rgba(59, 130, 246, .2);
+      --glow-r: 0 0 24px rgba(239, 68, 68, .3);
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      background-image:
+        radial-gradient(ellipse at 20% 10%, rgba(34, 197, 94, .04) 0%, transparent 50%),
+        radial-gradient(ellipse at 80% 80%, rgba(59, 130, 246, .04) 0%, transparent 50%);
+    }
+
+    /* ── Header ─────────────────────────────────────────────────────── */
+    header {
+      background: rgba(13, 21, 38, .85);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border);
+      padding: .9rem 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: .6rem;
+      font-size: 1.2rem;
+      font-weight: 800;
+      letter-spacing: -.02em;
+    }
+
+    .logo span {
+      color: var(--accent);
+    }
+
+    .logo-icon {
+      font-size: 1.4rem;
+    }
+
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .status-pill {
+      display: flex;
+      align-items: center;
+      gap: .4rem;
+      background: rgba(34, 197, 94, .1);
+      color: var(--accent);
+      border: 1px solid rgba(34, 197, 94, .25);
+      padding: .3rem .85rem;
+      border-radius: 999px;
+      font-size: .78rem;
+      font-weight: 600;
+    }
+
+    .status-pill .dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--accent);
+      animation: pulse-dot 1.8s ease-in-out infinite;
+    }
+
+    @keyframes pulse-dot {
+
+      0%,
+      100% {
+        opacity: 1;
+        transform: scale(1)
+      }
+
+      50% {
+        opacity: .3;
+        transform: scale(.7)
+      }
+    }
+
+    .header-time {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: .8rem;
+      color: var(--muted2);
+    }
+
+    /* ── Main ───────────────────────────────────────────────────────── */
+    main {
+      flex: 1;
+      padding: 1.75rem 2rem;
+      max-width: 1500px;
+      margin: 0 auto;
+      width: 100%;
+    }
+
+    /* ── Section Title ───────────────────────────────────────────────── */
+    .section-title {
+      font-size: .7rem;
+      font-weight: 700;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: .1em;
+      margin-bottom: .85rem;
+      display: flex;
+      align-items: center;
+      gap: .5rem;
+    }
+
+    .section-title::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--border);
+    }
+
+    /* ── KPI Row ─────────────────────────────────────────────────────── */
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(185px, 1fr));
+      gap: 1rem;
+      margin-bottom: 2rem;
+    }
+
+    .kpi-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.25rem 1.4rem;
+      transition: transform .2s, border-color .3s, box-shadow .3s;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .kpi-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: var(--accent-color, var(--accent));
+      opacity: .7;
+    }
+
+    .kpi-card:hover {
+      transform: translateY(-3px);
+      border-color: var(--accent-color, var(--accent));
+      box-shadow: var(--glow-g);
+    }
+
+    .kpi-icon {
+      font-size: 1.4rem;
+      margin-bottom: .5rem;
+    }
+
+    .kpi-label {
+      font-size: .7rem;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: .07em;
+    }
+
+    .kpi-value {
+      font-size: 1.9rem;
+      font-weight: 800;
+      margin: .3rem 0;
+      font-family: 'JetBrains Mono', monospace;
+      transition: color .4s;
+    }
+
+    .kpi-sub {
+      font-size: .73rem;
+      color: var(--muted2);
+    }
+
+    /* ── Intelligence Grid ────────────────────────────────────────────── */
+    .intel-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 1.25rem;
+      margin-bottom: 1.5rem;
+    }
+
+    @media (max-width: 1100px) {
+      .intel-grid {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+
+    @media (max-width: 700px) {
+      .intel-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* ── Card Base ───────────────────────────────────────────────────── */
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.4rem;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 1.2rem;
+    }
+
+    .card-title {
+      font-size: .72rem;
+      font-weight: 700;
+      color: var(--muted2);
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      display: flex;
+      align-items: center;
+      gap: .45rem;
+    }
+
+    .card-badge {
+      font-size: .65rem;
+      font-weight: 600;
+      padding: .2rem .55rem;
+      border-radius: 999px;
+      background: rgba(59, 130, 246, .15);
+      color: var(--accent2);
+    }
+
+    .card-badge.live {
+      background: rgba(34, 197, 94, .15);
+      color: var(--accent);
+    }
+
+    .card-badge.warn {
+      background: rgba(245, 158, 11, .15);
+      color: var(--warn);
+    }
+
+    .card-badge.danger {
+      background: rgba(239, 68, 68, .15);
+      color: var(--danger);
+    }
+
+    /* ─────────────────────────────────────────────────────────────────
+       1. CO₂ PREDICTION CARD
+    ─────────────────────────────────────────────────────────────────── */
+    .co2-value-big {
+      font-size: 3.2rem;
+      font-weight: 800;
+      font-family: 'JetBrains Mono', monospace;
+      color: var(--accent2);
+      line-height: 1;
+      margin-bottom: .3rem;
+    }
+
+    .co2-unit {
+      font-size: 1.1rem;
+      font-weight: 400;
+      color: var(--muted2);
+    }
+
+    .prediction-row {
+      display: flex;
+      align-items: center;
+      gap: 1.2rem;
+      margin-top: 1rem;
+      padding-top: 1rem;
+      border-top: 1px solid var(--border);
+    }
+
+    .trend-arrow {
+      font-size: 2.2rem;
+      transition: color .4s, transform .4s;
+      font-weight: 800;
+    }
+
+    .trend-arrow.up {
+      color: var(--danger);
+      transform: rotate(-30deg);
+    }
+
+    .trend-arrow.down {
+      color: var(--accent);
+      transform: rotate(30deg);
+    }
+
+    .trend-arrow.stable {
+      color: var(--warn);
+      transform: none;
+    }
+
+    .confidence-bar-wrap {
+      flex: 1;
+    }
+
+    .confidence-label {
+      font-size: .7rem;
+      color: var(--muted);
+      margin-bottom: .35rem;
+    }
+
+    .confidence-bar {
+      height: 6px;
+      border-radius: 999px;
+      background: var(--bg2);
+      overflow: hidden;
+    }
+
+    .confidence-fill {
+      height: 100%;
+      border-radius: 999px;
+      background: linear-gradient(90deg, var(--accent2), var(--accent));
+      transition: width .8s cubic-bezier(.16, 1, .3, 1);
+    }
+
+    .confidence-pct {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: .85rem;
+      font-weight: 600;
+      color: var(--accent2);
+      margin-top: .3rem;
+    }
+
+    /* ─────────────────────────────────────────────────────────────────
+       2. RISK METER (Circular Gauge)
+    ─────────────────────────────────────────────────────────────────── */
+    .gauge-wrap {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .gauge-svg-wrap {
+      position: relative;
+      width: 180px;
+      height: 110px;
+      margin: 0 auto;
+    }
+
+    #gauge-svg {
+      width: 100%;
+      height: auto;
+    }
+
+    .gauge-needle {
+      transform-origin: 90px 100px;
+      transition: transform 1.2s cubic-bezier(.34, 1.56, .64, 1);
+    }
+
+    .gauge-value-center {
+      text-align: center;
+      margin-top: .5rem;
+    }
+
+    .gauge-score {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 2.4rem;
+      font-weight: 800;
+      transition: color .5s;
+    }
+
+    .gauge-level {
+      font-size: .78rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .1em;
+      margin-top: .1rem;
+    }
+
+    .gauge-legend {
+      display: flex;
+      justify-content: space-between;
+      width: 100%;
+      margin-top: 1rem;
+      font-size: .65rem;
+      color: var(--muted);
+    }
+
+    .legend-dot {
+      display: inline-block;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      margin-right: 3px;
+    }
+
+    /* ─────────────────────────────────────────────────────────────────
+       3. AI RECOMMENDATION PANEL
+    ─────────────────────────────────────────────────────────────────── */
+    .rec-panel {
+      position: relative;
+    }
+
+    .rec-panel.emergency {
+      border-color: var(--danger);
+      box-shadow: 0 0 0 1px var(--danger), var(--glow-r);
+      animation: emergency-pulse 2s ease-in-out infinite;
+    }
+
+    @keyframes emergency-pulse {
+
+      0%,
+      100% {
+        box-shadow: 0 0 0 1px var(--danger), 0 0 20px rgba(239, 68, 68, .2);
+      }
+
+      50% {
+        box-shadow: 0 0 0 2px var(--danger), 0 0 40px rgba(239, 68, 68, .4);
+      }
+    }
+
+    .rec-action-level {
+      display: inline-flex;
+      align-items: center;
+      gap: .4rem;
+      padding: .35rem .85rem;
+      border-radius: 999px;
+      font-size: .78rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .07em;
+      margin-bottom: 1rem;
+    }
+
+    .rec-action-level.safe {
+      background: rgba(34, 197, 94, .15);
+      color: var(--accent);
+    }
+
+    .rec-action-level.moderate {
+      background: rgba(245, 158, 11, .15);
+      color: var(--warn);
+    }
+
+    .rec-action-level.high {
+      background: rgba(249, 115, 22, .15);
+      color: #f97316;
+    }
+
+    .rec-action-level.critical {
+      background: rgba(239, 68, 68, .15);
+      color: var(--danger);
+    }
+
+    .rec-item {
+      display: flex;
+      align-items: flex-start;
+      gap: .65rem;
+      padding: .6rem .8rem;
+      border-radius: 8px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      margin-bottom: .5rem;
+      font-size: .82rem;
+      line-height: 1.4;
+      animation: fadeSlide .35s ease;
+    }
+
+    @keyframes fadeSlide {
+      from {
+        opacity: 0;
+        transform: translateY(6px);
+      }
+
+      to {
+        opacity: 1;
+        transform: none;
+      }
+    }
+
+    .rec-icon {
+      font-size: 1rem;
+      flex-shrink: 0;
+      margin-top: .05rem;
+    }
+
+    .rec-explanation {
+      margin-top: .9rem;
+      padding: .75rem 1rem;
+      border-radius: 8px;
+      background: rgba(59, 130, 246, .07);
+      border: 1px solid rgba(59, 130, 246, .15);
+      font-size: .81rem;
+      line-height: 1.6;
+      color: var(--muted2);
+    }
+
+    .rec-explanation strong {
+      color: var(--accent2);
+    }
+
+    /* ─────────────────────────────────────────────────────────────────
+       4. WHAT-IF SIMULATOR
+    ─────────────────────────────────────────────────────────────────── */
+    .sim-row {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin-bottom: 1.1rem;
+    }
+
+    .sim-label {
+      font-size: .8rem;
+      color: var(--muted2);
+      width: 130px;
+      flex-shrink: 0;
+    }
+
+    .sim-slider {
+      -webkit-appearance: none;
+      appearance: none;
+      flex: 1;
+      height: 5px;
+      border-radius: 999px;
+      background: var(--border2);
+      outline: none;
+      cursor: pointer;
+    }
+
+    .sim-slider::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: var(--accent2);
+      cursor: pointer;
+      box-shadow: 0 0 8px rgba(59, 130, 246, .5);
+      transition: transform .15s;
+    }
+
+    .sim-slider::-webkit-slider-thumb:hover {
+      transform: scale(1.15);
+    }
+
+    .sim-val {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: .85rem;
+      font-weight: 600;
+      color: var(--accent2);
+      width: 40px;
+      text-align: right;
+    }
+
+    .sim-result {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: .75rem;
+      margin-top: .5rem;
+    }
+
+    .sim-metric {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: .85rem 1rem;
+    }
+
+    .sim-metric-label {
+      font-size: .68rem;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: .06em;
+      margin-bottom: .35rem;
+    }
+
+    .sim-metric-val {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 1.5rem;
+      font-weight: 700;
+      transition: color .4s;
+    }
+
+    .sim-metric-delta {
+      font-size: .72rem;
+      margin-top: .2rem;
+    }
+
+    .delta-pos {
+      color: var(--accent);
+    }
+
+    .delta-neg {
+      color: var(--danger);
+    }
+
+    /* ─────────────────────────────────────────────────────────────────
+       5. EXECUTIVE SUMMARY CARD
+    ─────────────────────────────────────────────────────────────────── */
+    .exec-card {
+      grid-column: 1 / -1;
+    }
+
+    .exec-header-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 1rem;
+    }
+
+    .exec-countdown {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: .75rem;
+      color: var(--muted);
+      display: flex;
+      align-items: center;
+      gap: .4rem;
+    }
+
+    .exec-countdown-ring {
+      width: 22px;
+      height: 22px;
+    }
+
+    .exec-body {
+      font-size: .88rem;
+      line-height: 1.7;
+      color: var(--text);
+      min-height: 80px;
+      transition: opacity .4s;
+    }
+
+    .exec-body.refreshing {
+      opacity: .3;
+    }
+
+    .exec-typing::after {
+      content: '▊';
+      animation: blink .7s step-start infinite;
+      color: var(--accent);
+    }
+
+    @keyframes blink {
+      50% {
+        opacity: 0
+      }
+    }
+
+    .exec-meta {
+      display: flex;
+      gap: 1rem;
+      margin-top: 1rem;
+      padding-top: 1rem;
+      border-top: 1px solid var(--border);
+      flex-wrap: wrap;
+    }
+
+    .exec-meta-chip {
+      font-size: .72rem;
+      color: var(--muted2);
+      display: flex;
+      align-items: center;
+      gap: .35rem;
+    }
+
+    .exec-meta-chip span {
+      color: var(--accent);
+      font-weight: 600;
+    }
+
+    /* ── Bottom Grid ─────────────────────────────────────────────────── */
+    .bottom-grid {
+      display: grid;
+      grid-template-columns: 1fr 380px;
+      gap: 1.25rem;
+      margin-top: 1.5rem;
+    }
+
+    @media (max-width: 900px) {
+      .bottom-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* ── Live Feed ────────────────────────────────────────────────────── */
+    #feed {
+      height: 380px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: .4rem;
+    }
+
+    #feed::-webkit-scrollbar {
+      width: 3px;
+    }
+
+    #feed::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    #feed::-webkit-scrollbar-thumb {
+      background: var(--border2);
+      border-radius: 4px;
+    }
+
+    .feed-item {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: .65rem .9rem;
+      font-size: .8rem;
+      display: flex;
+      gap: .85rem;
+      align-items: center;
+      animation: slideIn .25s ease;
+    }
+
+    @keyframes slideIn {
+      from {
+        opacity: 0;
+        transform: translateX(-6px)
+      }
+
+      to {
+        opacity: 1;
+        transform: none
+      }
+    }
+
+    .feed-source {
+      color: var(--accent);
+      font-weight: 600;
+      white-space: nowrap;
+      min-width: 70px;
+    }
+
+    .feed-score {
+      margin-left: auto;
+      font-size: .72rem;
+      padding: .12rem .45rem;
+      border-radius: 999px;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    .score-hi {
+      background: rgba(34, 197, 94, .12);
+      color: var(--accent);
+    }
+
+    .score-mid {
+      background: rgba(249, 115, 22, .12);
+      color: #f97316;
+    }
+
+    .score-lo {
+      background: rgba(100, 116, 139, .12);
+      color: var(--muted2);
+    }
+
+    /* ── AI Chat ─────────────────────────────────────────────────────── */
+    .query-form {
+      display: flex;
+      flex-direction: column;
+      gap: .7rem;
+    }
+
+    textarea {
+      background: var(--bg);
+      color: var(--text);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: .75rem 1rem;
+      font-family: inherit;
+      font-size: .85rem;
+      resize: vertical;
+      min-height: 85px;
+      outline: none;
+      transition: border-color .2s, box-shadow .2s;
+    }
+
+    textarea:focus {
+      border-color: var(--accent2);
+      box-shadow: var(--glow-b);
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: .4rem;
+      padding: .65rem 1.25rem;
+      border-radius: 8px;
+      font-weight: 700;
+      font-size: .85rem;
+      cursor: pointer;
+      border: none;
+      transition: opacity .15s, transform .15s, box-shadow .2s;
+    }
+
+    .btn:active {
+      transform: scale(.97);
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--accent), #16a34a);
+      color: #050d18;
+      box-shadow: 0 4px 14px rgba(34, 197, 94, .3);
+    }
+
+    .btn-primary:hover {
+      opacity: .9;
+    }
+
+    .btn-primary:disabled {
+      opacity: .4;
+      cursor: not-allowed;
+    }
+
+    #answer-box {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 1rem;
+      font-size: .83rem;
+      line-height: 1.65;
+      max-height: 190px;
+      overflow-y: auto;
+      display: none;
+    }
+
+    /* ── Footer ─────────────────────────────────────────────────────── */
+    footer {
+      text-align: center;
+      padding: 1.1rem;
+      color: var(--muted);
+      font-size: .72rem;
+      border-top: 1px solid var(--border);
+    }
+
+    /* ── Update flash animation ──────────────────────────────────────── */
+    @keyframes flash-update {
+      0% {
+        background: rgba(59, 130, 246, .15);
+      }
+
+      100% {
+        background: transparent;
+      }
+    }
+
+    .just-updated {
+      animation: flash-update .8s ease;
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- ── Header ──────────────────────────────────────────────────────────── -->
+  <header>
+    <div class="logo">
+      <span class="logo-icon">🌿</span>
+      GreenFlow <span>AI</span>
+    </div>
+    <div class="header-right">
+      <div class="header-time" id="clock">—</div>
+      <div id="pill" class="status-pill">
+        <div class="dot"></div>
+        <span id="pill-text">Connecting…</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- ── Main ────────────────────────────────────────────────────────────── -->
+  <main>
+
+    <!-- KPI Row -->
+    <div class="section-title">📊 Live Telemetry</div>
+    <div class="kpi-grid" id="kpi-grid">
+      <div class="kpi-card" style="--accent-color:#22c55e">
+        <div class="kpi-icon">⚡</div>
+        <div class="kpi-label">Events Received</div>
+        <div id="kpi-events" class="kpi-value" style="color:#22c55e">0</div>
+        <div class="kpi-sub">Since page load</div>
+      </div>
+      <div class="kpi-card" style="--accent-color:#3b82f6">
+        <div class="kpi-icon">💨</div>
+        <div class="kpi-label">CO₂ (Latest)</div>
+        <div id="kpi-co2" class="kpi-value" style="color:#3b82f6">—</div>
+        <div class="kpi-sub" id="kpi-co2-sub">ppm</div>
+      </div>
+      <div class="kpi-card" style="--accent-color:#f59e0b">
+        <div class="kpi-icon">🌡️</div>
+        <div class="kpi-label">Temperature</div>
+        <div id="kpi-temp" class="kpi-value" style="color:#f59e0b">— °C</div>
+        <div class="kpi-sub">Latest reading</div>
+      </div>
+      <div class="kpi-card" style="--accent-color:#8b5cf6">
+        <div class="kpi-icon">💧</div>
+        <div class="kpi-label">AQI Index</div>
+        <div id="kpi-aqi" class="kpi-value" style="color:#8b5cf6">—</div>
+        <div class="kpi-sub">Air quality index</div>
+      </div>
+      <div class="kpi-card" style="--accent-color:#22c55e">
+        <div class="kpi-icon">📈</div>
+        <div class="kpi-label">Avg Carbon Score</div>
+        <div id="kpi-score" class="kpi-value" style="color:#22c55e">—</div>
+        <div class="kpi-sub">Higher = more relevant</div>
+      </div>
+    </div>
+
+    <!-- Intelligence Grid -->
+    <div class="section-title">🧠 AI Intelligence Layer</div>
+    <div class="intel-grid">
+
+      <!-- 1. CO₂ Prediction Card -->
+      <div class="card" id="co2-pred-card">
+        <div class="card-header">
+          <div class="card-title">🔮 CO₂ 30-Min Forecast</div>
+          <span class="card-badge" id="pred-badge">Loading…</span>
+        </div>
+        <div class="co2-value-big" id="pred-value">—<span class="co2-unit">ppm</span></div>
+        <div class="prediction-row">
+          <div class="trend-arrow" id="trend-arrow">→</div>
+          <div class="confidence-bar-wrap">
+            <div class="confidence-label">Prediction Confidence</div>
+            <div class="confidence-bar">
+              <div class="confidence-fill" id="conf-fill" style="width:0%"></div>
+            </div>
+            <div class="confidence-pct" id="conf-pct">—%</div>
+          </div>
+        </div>
+        <div style="margin-top:.85rem;font-size:.72rem;color:var(--muted)">
+          Current: <span id="current-co2" style="color:var(--text);font-family:'JetBrains Mono',monospace">—</span> ppm
+          &nbsp;·&nbsp; Trend: <span id="trend-label" style="color:var(--accent2)">—</span>
+        </div>
+      </div>
+
+      <!-- 2. Risk Meter Card -->
+      <div class="card" id="risk-card">
+        <div class="card-header">
+          <div class="card-title">⚠️ Environmental Risk</div>
+          <span class="card-badge" id="risk-badge">Loading…</span>
+        </div>
+        <div class="gauge-wrap">
+          <div class="gauge-svg-wrap">
+            <svg id="gauge-svg" viewBox="0 0 180 110" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <!-- Arc segments: SAFE=green, MODERATE=yellow, HIGH=orange, CRITICAL=red -->
+              <!-- 180° arc, split: 0-60° green, 60-100° yellow, 100-130° orange, 130-180° red -->
+              <path d="M10,100 A80,80 0 0,1 57,28" stroke="#22c55e" stroke-width="14" stroke-linecap="round" />
+              <path d="M57,28 A80,80 0 0,1 95,11" stroke="#f59e0b" stroke-width="14" stroke-linecap="round" />
+              <path d="M95,11 A80,80 0 0,1 135,22" stroke="#f97316" stroke-width="14" stroke-linecap="round" />
+              <path d="M135,22 A80,80 0 0,1 170,100" stroke="#ef4444" stroke-width="14" stroke-linecap="round" />
+              <!-- Needle -->
+              <line id="gauge-needle" x1="90" y1="100" x2="90" y2="28" stroke="white" stroke-width="2.5"
+                stroke-linecap="round" class="gauge-needle" transform="rotate(-90, 90, 100)" />
+              <!-- Center dot -->
+              <circle cx="90" cy="100" r="5" fill="white" />
+            </svg>
+          </div>
+          <div class="gauge-value-center">
+            <div class="gauge-score" id="gauge-score">—</div>
+            <div class="gauge-level" id="gauge-level">—</div>
+          </div>
+          <div class="gauge-legend">
+            <span><span class="legend-dot" style="background:#22c55e"></span>Safe</span>
+            <span><span class="legend-dot" style="background:#f59e0b"></span>Moderate</span>
+            <span><span class="legend-dot" style="background:#f97316"></span>High</span>
+            <span><span class="legend-dot" style="background:#ef4444"></span>Critical</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 3. AI Recommendation Panel -->
+      <div class="card rec-panel" id="rec-panel">
+        <div class="card-header">
+          <div class="card-title">🤖 AI Recommendation</div>
+          <span class="card-badge" id="rec-update-badge">—</span>
+        </div>
+        <div class="rec-action-level safe" id="rec-action-level">
+          <span>●</span> Monitoring
+        </div>
+        <div id="rec-list"></div>
+        <div class="rec-explanation" id="rec-explanation">
+          Fetching AI analysis…
+        </div>
+      </div>
+
+    </div><!-- /intel-grid -->
+
+    <!-- Row 2: Simulator + Executive Summary -->
+    <div class="intel-grid" style="grid-template-columns: 1fr 2fr;">
+
+      <!-- 4. What-If Simulator -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">🔧 What-if Simulator</div>
+          <span class="card-badge" id="sim-badge">API-powered</span>
+        </div>
+
+        <div class="sim-row">
+          <div class="sim-label">🚗 Traffic Cut</div>
+          <input type="range" min="0" max="100" value="0" class="sim-slider" id="traffic-slider"
+            oninput="updateSimulator()" />
+          <div class="sim-val" id="traffic-val">0%</div>
+        </div>
+        <div class="sim-row">
+          <div class="sim-label">💨 Ventilation</div>
+          <input type="range" min="0" max="100" value="0" class="sim-slider" id="ventilation-slider"
+            oninput="updateSimulator()" />
+          <div class="sim-val" id="ventilation-val">0%</div>
+        </div>
+        <div class="sim-row">
+          <div class="sim-label">🏭 Industry Cut</div>
+          <input type="range" min="0" max="100" value="0" class="sim-slider" id="industry-slider"
+            oninput="updateSimulator()" />
+          <div class="sim-val" id="industry-val">0%</div>
+        </div>
+
+        <div class="sim-result">
+          <div class="sim-metric">
+            <div class="sim-metric-label">Projected CO₂</div>
+            <div class="sim-metric-val" id="sim-co2" style="color:#3b82f6">—</div>
+            <div class="sim-metric-delta" id="sim-co2-delta">—</div>
+          </div>
+          <div class="sim-metric">
+            <div class="sim-metric-label">Projected Risk</div>
+            <div class="sim-metric-val" id="sim-risk" style="color:#22c55e">—</div>
+            <div class="sim-metric-delta" id="sim-risk-delta">—</div>
+          </div>
+          <div class="sim-metric">
+            <div class="sim-metric-label">CO₂ Reduction</div>
+            <div class="sim-metric-val delta-pos" id="sim-saving">—</div>
+            <div class="sim-metric-delta" style="color:var(--muted)">ppm saved</div>
+          </div>
+          <div class="sim-metric">
+            <div class="sim-metric-label">Safety Level</div>
+            <div class="sim-metric-val" id="sim-safety" style="color:#22c55e; font-size:1rem;">—</div>
+            <div class="sim-metric-delta" style="color:var(--muted)">projected</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 5. Executive Summary Card -->
+      <div class="card exec-card">
+        <div class="exec-header-row">
+          <div class="card-title">📋 Executive Summary</div>
+          <div class="exec-countdown" id="exec-countdown-wrap">
+            <svg class="exec-countdown-ring" viewBox="0 0 22 22">
+              <circle cx="11" cy="11" r="9" stroke="var(--border2)" stroke-width="2" fill="none" />
+              <circle id="countdown-ring" cx="11" cy="11" r="9" stroke="var(--accent2)" stroke-width="2" fill="none"
+                stroke-dasharray="56.5" stroke-dashoffset="0" stroke-linecap="round" transform="rotate(-90, 11, 11)"
+                style="transition: stroke-dashoffset 1s linear" />
+            </svg>
+            Refresh in <span id="exec-countdown">60</span>s
+          </div>
+        </div>
+        <div class="exec-body" id="exec-body">
+          <em style="color:var(--muted)">AI-generated executive briefing loading…</em>
+        </div>
+        <div class="exec-meta" id="exec-meta">
+          <div class="exec-meta-chip">🌍 City: <span id="meta-city">New Delhi</span></div>
+          <div class="exec-meta-chip">💨 CO₂ Status: <span id="meta-co2-status">—</span></div>
+          <div class="exec-meta-chip">⚠️ Risk: <span id="meta-risk">—</span></div>
+          <div class="exec-meta-chip">🕐 Updated: <span id="meta-updated">—</span></div>
+        </div>
+      </div>
+
+    </div><!-- /row2 -->
+
+    <!-- Live Feed + AI Chat -->
+    <div class="section-title">📡 Live Intelligence Feed</div>
+    <div class="bottom-grid">
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">📡 Live Event Feed <span class="card-badge live" id="feed-count">0 events</span></div>
+        </div>
+        <div id="feed"></div>
+      </div>
+
+      <div class="card">
+        <div class="card-title" style="margin-bottom:1rem">🤖 Ask GreenFlow AI</div>
+        <div class="query-form">
+          <textarea id="user-question" placeholder="e.g. Why is CO₂ rising? Is it safe outside?"></textarea>
+          <button id="ask-btn" class="btn btn-primary" onclick="askQuestion()">⚡ Ask AI</button>
+          <div id="answer-box"></div>
+        </div>
+      </div>
+
+    </div>
+
+  </main>
+
+  <footer>© 2025 GreenFlow AI · Powered by Pathway + FastAPI · Real-time Environmental Intelligence</footer>
+
+  <!-- ── JavaScript ─────────────────────────────────────────────────────── -->
+  <script>
+    /* ── Config ─────────────────────────────────────────────────────── */
+    const BASE = window.location.port === '8000' ? '' : `http://${window.location.hostname}:8000`;
+    const API = `${BASE}/api/v1`;
+
+    /* ── State ──────────────────────────────────────────────────────── */
+    let eventCount = 0, scoreSum = 0;
+    let latestCO2 = null, latestRisk = null;
+    let execCountdown = 60;
+
+    /* ── Clock ──────────────────────────────────────────────────────── */
+    function tickClock() {
+      document.getElementById('clock').textContent =
+        new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+    }
+    setInterval(tickClock, 1000);
+    tickClock();
+
+    /* ── SSE ────────────────────────────────────────────────────────── */
+    const pill = document.getElementById('pill');
+    const pillText = document.getElementById('pill-text');
+
+    function connectSSE() {
+      const es = new EventSource(`${API}/stream/events`);
+      es.onopen = () => { pillText.textContent = 'Live'; pill.style.cssText = ''; };
+      es.onmessage = e => {
+        try { handleEvent(JSON.parse(e.data)); } catch (_) { }
+      };
+      es.onerror = () => {
+        pillText.textContent = 'Reconnecting…';
+        pill.style.background = 'rgba(239,68,68,.12)';
+        pill.style.color = '#ef4444';
+        pill.style.borderColor = 'rgba(239,68,68,.3)';
+        es.close();
+        setTimeout(connectSSE, 3000);
+      };
+    }
+
+    function handleEvent(data) {
+      eventCount++;
+      if (data.carbon_score !== undefined) scoreSum += data.carbon_score;
+
+      document.getElementById('kpi-events').textContent = eventCount;
+      document.getElementById('kpi-score').textContent =
+        eventCount ? (scoreSum / eventCount).toFixed(3) : '—';
+      if (data.co2_ppm !== undefined) {
+        latestCO2 = data.co2_ppm;
+        document.getElementById('kpi-co2').textContent = data.co2_ppm.toFixed(1);
+      }
+      if (data.temperature_c !== undefined)
+        document.getElementById('kpi-temp').textContent = data.temperature_c.toFixed(1) + ' °C';
+      if (data.aqi !== undefined)
+        document.getElementById('kpi-aqi').textContent = data.aqi;
+
+      document.getElementById('feed-count').textContent = eventCount + ' events';
+
+      const feed = document.getElementById('feed');
+      const score = data.carbon_score ?? null;
+      const cls = score === null ? 'score-lo' : score >= .6 ? 'score-hi' : score >= .3 ? 'score-mid' : 'score-lo';
+      const item = document.createElement('div');
+      item.className = 'feed-item';
+      item.innerHTML = `
+        <span class="feed-source">${data.source || 'sensor'}</span>
+        <span style="color:var(--muted2);flex:1;font-size:.75rem">${new Date((data.timestamp || Date.now() / 1000) * 1000).toLocaleTimeString()}</span>
+        ${score !== null ? `<span class="feed-score ${cls}">${score.toFixed(3)}</span>` : ''}
+      `;
+      feed.prepend(item);
+      while (feed.children.length > 60) feed.lastChild.remove();
+    }
+
+    /* ════════════════════════════════════════════════════════════════
+       1. CO₂ PREDICTION FETCH
+    ════════════════════════════════════════════════════════════════ */
+    async function fetchPrediction() {
+      try {
+        const r = await fetch(`${API}/analytics/prediction/co2`);
+        if (!r.ok) return;
+        const d = await r.json();
+
+        latestCO2 = d.current_co2;
+        document.getElementById('pred-value').innerHTML =
+          `${d.predicted_co2_30min.toFixed(1)}<span class="co2-unit">ppm</span>`;
+        document.getElementById('current-co2').textContent = d.current_co2.toFixed(1);
+        document.getElementById('trend-label').textContent = d.trend;
+
+        // Confidence
+        const conf = Math.round(d.confidence * 100);
+        document.getElementById('conf-fill').style.width = conf + '%';
+        document.getElementById('conf-pct').textContent = conf + '%';
+
+        // Badge
+        const badge = document.getElementById('pred-badge');
+        const diff = d.predicted_co2_30min - d.current_co2;
+        badge.textContent = diff > 0 ? `+${diff.toFixed(1)} ▲` : `${diff.toFixed(1)} ▼`;
+        badge.className = 'card-badge ' + (diff > 5 ? 'danger' : diff > 0 ? 'warn' : 'live');
+
+        // Trend arrow
+        const arrow = document.getElementById('trend-arrow');
+        if (d.trend === 'increasing') { arrow.textContent = '↑'; arrow.className = 'trend-arrow up'; }
+        else if (d.trend === 'decreasing') { arrow.textContent = '↓'; arrow.className = 'trend-arrow down'; }
+        else { arrow.textContent = '→'; arrow.className = 'trend-arrow stable'; }
+
+        document.getElementById('kpi-co2').textContent = d.current_co2.toFixed(1);
+        flashUpdate('co2-pred-card');
+        updateSimulatorCalc(); // update simulator based on new data
+      } catch (e) { console.warn('Prediction fetch:', e); }
+    }
+
+    /* ════════════════════════════════════════════════════════════════
+       2. RISK METER
+    ════════════════════════════════════════════════════════════════ */
+    const RISK_COLORS = {
+      SAFE: '#22c55e',
+      MODERATE: '#f59e0b',
+      HIGH: '#f97316',
+      CRITICAL: '#ef4444',
+    };
+
+    function setGaugeAngle(score) {
+      // score 0-100 maps to needle rotation -90° (left) to +90° (right)
+      const angle = -90 + (score / 100) * 180;
+      document.getElementById('gauge-needle').setAttribute('transform',
+        `rotate(${angle}, 90, 100)`);
+    }
+
+    async function fetchRisk() {
+      try {
+        const r = await fetch(`${API}/analytics/risk-score`);
+        if (!r.ok) return;
+        const d = await r.json();
+        latestRisk = d;
+
+        const score = d.current_score ?? 0;
+        const levelRaw = (d.safety_level || 'SAFE').toUpperCase();
+        const level = ['SAFE', 'MODERATE', 'HIGH', 'CRITICAL'].includes(levelRaw) ? levelRaw : 'SAFE';
+        const color = RISK_COLORS[level];
+
+        document.getElementById('gauge-score').textContent = score.toFixed(0);
+        document.getElementById('gauge-score').style.color = color;
+        document.getElementById('gauge-level').textContent = level;
+        document.getElementById('gauge-level').style.color = color;
+
+        const riskBadge = document.getElementById('risk-badge');
+        riskBadge.textContent = level;
+        riskBadge.className = 'card-badge ' + ({ 'SAFE': 'live', 'MODERATE': 'warn', 'HIGH': 'warn', 'CRITICAL': 'danger' }[level] || 'live');
+
+        setGaugeAngle(score);
+
+        // Update exec meta
+        document.getElementById('meta-risk').textContent = level;
+        document.getElementById('meta-risk').style.color = color;
+        flashUpdate('risk-card');
+      } catch (e) { console.warn('Risk fetch:', e); }
+    }
+
+    /* ════════════════════════════════════════════════════════════════
+       3. AI RECOMMENDATION
+    ════════════════════════════════════════════════════════════════ */
+    const REC_ICONS = {
+      'traffic': '🚗', 'ventil': '💨', 'advisory': '📢',
+      'emergency': '🚨', 'policy': '📋', 'default': '✅'
+    };
+
+    function getRecIcon(text) {
+      const t = text.toLowerCase();
+      for (const [k, v] of Object.entries(REC_ICONS)) {
+        if (t.includes(k)) return v;
+      }
+      return '✅';
+    }
+
+    async function fetchRecommendation() {
+      try {
+        const r = await fetch(`${API}/analytics/recommendation`);
+        if (!r.ok) return;
+        const d = await r.json();
+
+        const panel = document.getElementById('rec-panel');
+        const levelEl = document.getElementById('rec-action-level');
+        const levelRaw = (d.action_level || 'safe').toLowerCase();
+
+        // Action level badge
+        levelEl.className = 'rec-action-level ' + levelRaw;
+        levelEl.innerHTML = `<span>●</span> ${d.action_level}`;
+
+        // Emergency state
+        if (levelRaw === 'critical') {
+          panel.classList.add('emergency');
+        } else {
+          panel.classList.remove('emergency');
+        }
+
+        // Recommendations list
+        const list = document.getElementById('rec-list');
+        list.innerHTML = '';
+        (d.recommendations || []).slice(0, 4).forEach(rec => {
+          const div = document.createElement('div');
+          div.className = 'rec-item';
+          div.innerHTML = `<span class="rec-icon">${getRecIcon(rec)}</span><span>${rec}</span>`;
+          list.appendChild(div);
+        });
+
+        // Explanation
+        document.getElementById('rec-explanation').innerHTML =
+          `<strong>AI Analysis:</strong> ${d.explanation || '—'}`;
+
+        // Update badge
+        const badge = document.getElementById('rec-update-badge');
+        badge.textContent = new Date().toLocaleTimeString();
+        badge.className = 'card-badge live';
+      } catch (e) { console.warn('Rec fetch:', e); }
+    }
+
+    /* ════════════════════════════════════════════════════════════════
+       4. WHAT-IF SIMULATOR  (powered by POST /api/v1/simulate)
+    ════════════════════════════════════════════════════════════════ */
+    let _simTimer = null;
+
+    function updateSimulator() {
+      const tVal = parseInt(document.getElementById('traffic-slider').value);
+      const vVal = parseInt(document.getElementById('ventilation-slider').value);
+      const iVal = parseInt(document.getElementById('industry-slider').value);
+      document.getElementById('traffic-val').textContent = tVal + '%';
+      document.getElementById('ventilation-val').textContent = vVal + '%';
+      document.getElementById('industry-val').textContent = iVal + '%';
+
+      // Debounce: wait 400 ms after last slider move before API call
+      clearTimeout(_simTimer);
+      _simTimer = setTimeout(() => runSimulation(tVal, vVal, iVal), 400);
+    }
+
+    async function runSimulation(tPct, vPct, iPct) {
+      const badge = document.getElementById('sim-badge');
+      badge.textContent = '⏳ Calculating…';
+      badge.className = 'card-badge warn';
+
+      const safetyColor = r =>
+        r < 30 ? '#22c55e' : r < 55 ? '#f59e0b' : r < 75 ? '#f97316' : '#ef4444';
+
+      try {
+        const res = await fetch(`${API}/simulate/`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            traffic_reduction_pct: tPct,
+            ventilation_increase_pct: vPct,
+            industry_reduction_pct: iPct,
+          })
+        });
+        if (!res.ok) throw new Error(res.status);
+        const d = await res.json();
+
+        // ── CO₂
+        document.getElementById('sim-co2').textContent = d.new_predicted_co2.toFixed(1);
+        const co2Delta = d.new_predicted_co2 - d.baseline_co2;
+        document.getElementById('sim-co2-delta').innerHTML =
+          `<span class="${co2Delta <= 0 ? 'delta-pos' : 'delta-neg'}">${co2Delta <= 0 ? '↓' : '↑'} ${Math.abs(co2Delta).toFixed(1)} ppm</span>`;
+
+        // ── Risk
+        const rColor = safetyColor(d.new_risk_score);
+        document.getElementById('sim-risk').textContent = d.new_risk_score.toFixed(1);
+        document.getElementById('sim-risk').style.color = rColor;
+        const rDelta = d.new_risk_score - d.baseline_risk;
+        document.getElementById('sim-risk-delta').innerHTML =
+          `<span class="${rDelta <= 0 ? 'delta-pos' : 'delta-neg'}">${rDelta <= 0 ? '↓' : '↑'} ${Math.abs(rDelta).toFixed(1)} pts</span>`;
+
+        // ── Saved + Alert
+        document.getElementById('sim-saving').textContent = d.co2_reduction_ppm.toFixed(1);
+        document.getElementById('sim-safety').textContent = d.alert_level;
+        document.getElementById('sim-safety').style.color = rColor;
+
+        // ── Impact Summary – inject below the sim-result grid
+        let summaryEl = document.getElementById('sim-summary');
+        if (!summaryEl) {
+          summaryEl = document.createElement('div');
+          summaryEl.id = 'sim-summary';
+          summaryEl.style.cssText = 'margin-top:.9rem;padding:.75rem 1rem;border-radius:8px;background:rgba(34,197,94,.06);border:1px solid rgba(34,197,94,.15);font-size:.78rem;line-height:1.6;color:var(--muted2);animation:fadeSlide .4s ease';
+          document.getElementById('sim-saving').closest('.sim-result').after(summaryEl);
+        }
+        summaryEl.innerHTML = `<strong style="color:var(--accent)">📊 AI Impact Analysis</strong><br/>${d.impact_summary}`;
+
+        badge.textContent = '✅ API Result';
+        badge.className = 'card-badge live';
+      } catch (err) {
+        badge.textContent = '⚠️ Error';
+        badge.className = 'card-badge danger';
+        console.warn('Simulate API error:', err);
+      }
+    }
+
+    /* ════════════════════════════════════════════════════════════════
+       5. EXECUTIVE SUMMARY
+    ════════════════════════════════════════════════════════════════ */
+    async function fetchExecutiveSummary() {
+      const body = document.getElementById('exec-body');
+      body.classList.add('refreshing');
+
+      try {
+        const r = await fetch(`${API}/chatbot/chat`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            query: 'Provide a 3-sentence executive briefing: current CO₂ status, risk level, and the top recommended action. Be concise and data-backed.'
+          })
+        });
+        if (!r.ok) throw new Error(r.status);
+        const d = await r.json();
+
+        body.classList.remove('refreshing');
+        // Typewriter effect
+        typeWriter(body, d.answer || 'Summary unavailable.');
+        document.getElementById('meta-updated').textContent = new Date().toLocaleTimeString();
+        document.getElementById('meta-co2-status').textContent =
+          latestCO2 ? latestCO2.toFixed(1) + ' ppm' : '—';
+      } catch (e) {
+        body.classList.remove('refreshing');
+        body.textContent = 'Executive summary temporarily unavailable.';
+      }
+    }
+
+    function typeWriter(el, text, speed = 18) {
+      el.textContent = '';
+      el.classList.add('exec-typing');
+      let i = 0;
+      const t = setInterval(() => {
+        el.textContent += text[i++];
+        if (i >= text.length) { clearInterval(t); el.classList.remove('exec-typing'); }
+      }, speed);
+    }
+
+    /* Countdown ring */
+    function startExecCountdown() {
+      execCountdown = 60;
+      const ring = document.getElementById('countdown-ring');
+      const circumference = 56.5;
+
+      const tick = setInterval(() => {
+        execCountdown--;
+        document.getElementById('exec-countdown').textContent = execCountdown;
+        ring.style.strokeDashoffset = circumference * (1 - execCountdown / 60);
+        if (execCountdown <= 0) {
+          clearInterval(tick);
+          fetchExecutiveSummary().then(() => startExecCountdown());
+        }
+      }, 1000);
+    }
+
+    /* ── Helpers ────────────────────────────────────────────────────── */
+    function flashUpdate(id) {
+      const el = document.getElementById(id);
+      if (!el) return;
+      el.classList.remove('just-updated');
+      void el.offsetWidth; // reflow
+      el.classList.add('just-updated');
+    }
+
+    /* ── AI Chat ────────────────────────────────────────────────────── */
+    async function askQuestion() {
+      const question = document.getElementById('user-question').value.trim();
+      if (!question) return;
+      const btn = document.getElementById('ask-btn');
+      const answerBox = document.getElementById('answer-box');
+      btn.disabled = true;
+      btn.textContent = '⏳ Thinking…';
+      answerBox.style.display = 'block';
+      answerBox.textContent = '';
+      try {
+        const res = await fetch(`${API}/chatbot/chat`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ query: question }),
+        });
+        if (!res.ok) throw new Error(await res.text());
+        const data = await res.json();
+        answerBox.innerHTML = `<strong style="color:var(--accent)">Answer</strong><br/>${data.answer}`;
+      } catch (err) {
+        answerBox.innerHTML = `<span style="color:var(--danger)">Error: ${err.message}</span>`;
+      } finally {
+        btn.disabled = false;
+        btn.textContent = '⚡ Ask AI';
+      }
+    }
+
+    document.getElementById('user-question').addEventListener('keydown', e => {
+      if (e.key === 'Enter' && e.ctrlKey) askQuestion();
+    });
+
+    /* ── Polling ────────────────────────────────────────────────────── */
+    async function pollAll() {
+      await Promise.allSettled([
+        fetchPrediction(),
+        fetchRisk(),
+        fetchRecommendation(),
+      ]);
+    }
+
+    /* ── Boot ───────────────────────────────────────────────────────── */
+    connectSSE();
+    pollAll();                            // immediate first load
+    setInterval(pollAll, 15_000);         // refresh every 15s
+    updateSimulator();                    // init simulator display
+    fetchExecutiveSummary().then(() => startExecCountdown()); // start exec summary cycle
+  </script>
+</body>
+
+</html>

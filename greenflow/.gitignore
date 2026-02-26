@@ -1,0 +1,45 @@
+# ── Python ────────────────────────────
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+*.egg-info/
+dist/
+build/
+.eggs/
+*.egg
+
+# ── Virtual environments ──────────────
+.venv/
+venv/
+env/
+
+# ── Environment / secrets ─────────────
+.env
+*.env
+!.env.example
+
+# ── Logs ─────────────────────────────
+logs/
+*.log
+
+# ── Data (watch dirs / Pathway output)
+data/
+
+# ── IDE ───────────────────────────────
+.vscode/
+.idea/
+*.swp
+
+# ── DB ────────────────────────────────
+*.db
+*.sqlite3
+
+# ── ChromaDB local storage ────────────
+chroma_db/
+__chroma_db__/
+
+# ── OS ────────────────────────────────
+.DS_Store
+Thumbs.db
