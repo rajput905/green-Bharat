@@ -1,0 +1,22 @@
+# Requirements — Development Tools
+# Install with: pip install -r requirements-dev.txt
+
+# Testing
+pytest==8.0.0
+pytest-asyncio==0.23.5
+pytest-cov==4.1.0
+httpx==0.27.0          # Async HTTP client for API tests
+
+# Code Quality
+black==24.2.0          # Code formatter
+isort==5.13.2          # Import sorter
+flake8==7.0.0          # Linter
+mypy==1.8.0            # Type checker
+
+# Development
+ipython==8.21.0        # Enhanced Python shell
+watchdog==4.0.0        # File watcher utility
+
+# Documentation
+mkdocs==1.5.3          # Documentation site generator
+mkdocs-material==9.5.9 # Material theme for MkDocs
